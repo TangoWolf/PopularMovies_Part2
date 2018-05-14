@@ -10,11 +10,11 @@ public class MoviePreferences {
 
     private static final String POPULAR = "popular";
     private static final String TOP_RATED = "top_rated";
-    private static String DEFAULT_DRAW_PREFERENCE = POPULAR;
+    private static final String FAVORITES = "favorites";
 
     private static String mSortPeference = POPULAR;
 
-    public static String getMoviePreference(Context context) {
+    public static String getMoviePreference() {
         return mSortPeference;
     }
 
@@ -22,7 +22,5 @@ public class MoviePreferences {
 
     public static void sortRating() {mSortPeference = TOP_RATED;}
 
-    private static String getDefaultMoviePreference() {
-        return DEFAULT_DRAW_PREFERENCE;
-    }
+    public static void sortFavorites() {mSortPeference = FAVORITES;}
 }

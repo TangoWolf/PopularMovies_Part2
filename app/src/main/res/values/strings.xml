@@ -1,10 +1,17 @@
 <resources>
     <string name="app_name">PopularMovies</string>
 
+    <string name="no_movies">No Movies Available</string>
+
     <string name="sort_by">Sort By</string>
     <string name="sort_popular">Most Popular</string>
     <string name="sort_rating">Highest Rated</string>
+    <string name="sort_favorites">Favorites</string>
 
     <string name="main_popular">Most Popular Movies</string>
     <string name="main_rated">Highest Rated Movies</string>
+    <string name="main_favorites">Favorite Movies</string>
+
+    <string name="trailers">Trailers</string>
+    <string name="reviews">Reviews</string>
 </resources>

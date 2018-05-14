@@ -1,7 +1,11 @@
 package com.example.shaol.popularmovies;
 
+import android.support.v4.app.LoaderManager;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -13,7 +17,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.example.shaol.popularmovies.data.MovieContract.MovieEntry;
 import com.example.shaol.popularmovies.data.MoviePreferences;
 import com.example.shaol.popularmovies.model.Movie;
 import com.example.shaol.popularmovies.utils.JsonUtils;
@@ -21,12 +27,20 @@ import com.example.shaol.popularmovies.utils.NetworkUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener {
-    //TODO set up the detail view layout
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_ID;
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_IMAGE;
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_RATING;
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_RELEASE_DATE;
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_SYNOPSIS;
+import static com.example.shaol.popularmovies.data.MovieContract.MovieEntry.COLUMN_MOVIE_TITLE;
+
+public class MainActivity extends AppCompatActivity implements MovieAdapter.ListItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private ProgressBar mProgressBar;
+    private TextView mEmptyView;
+    private static final int MOVIE_LOADER = 0;
 
 
     @Override
@@ -36,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         setTitle(R.string.sort_popular);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_movies);
+
+        mEmptyView = findViewById(R.id.emptyView);
 
         GridLayoutManager layoutManager =
                 new GridLayoutManager(this, 2, LinearLayoutManager.VERTICAL, false);
@@ -52,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
     }
 
     private void loadMovieInfo() {
-        String moviePreference = MoviePreferences.getMoviePreference(this);
+        String moviePreference = MoviePreferences.getMoviePreference();
         new FetchMovieInfoTask().execute(moviePreference);
     }
 
@@ -64,11 +80,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
         String movieRating = movieInfo.getRating();
         String movieSynopsis = movieInfo.getSynopsis();
         String movieReleaseDate = movieInfo.getReleaseDate();
+        int movieId = movieInfo.getId();
         intent.putExtra("Title", movieTitle);
         intent.putExtra("Poster", moviePoster);
         intent.putExtra("Rating", movieRating);
         intent.putExtra("Synopsis", movieSynopsis);
         intent.putExtra("ReleaseDate", movieReleaseDate);
+        intent.putExtra("Id", movieId);
         startActivity(intent);
     }
 
@@ -100,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
 
         @Override
         protected void onPostExecute(Movie[] moviePosterInfo) {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
             mProgressBar.setVisibility(View.INVISIBLE);
             mMovieAdapter.setMovieInfo(moviePosterInfo);
         }
@@ -127,7 +147,59 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.List
                 loadMovieInfo();
                 setTitle(R.string.sort_rating);
                 return true;
+            case R.id.sort_favorites:
+                MoviePreferences.sortFavorites();
+                getSupportLoaderManager().initLoader(MOVIE_LOADER, null, this);
+                setTitle(R.string.sort_favorites);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                MovieEntry._ID,
+                MovieEntry.COLUMN_MOVIE_ID,
+                MovieEntry.COLUMN_MOVIE_TITLE,
+                MovieEntry.COLUMN_MOVIE_IMAGE,
+                MovieEntry.COLUMN_MOVIE_RATING,
+                MovieEntry.COLUMN_MOVIE_SYNOPSIS,
+                MovieEntry.COLUMN_MOVIE_RELEASE_DATE
+        };
+
+        return new CursorLoader(this, MovieEntry.CONTENT_URI, projection, null, null, COLUMN_MOVIE_ID);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (data == null) {
+            mRecyclerView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        } else {
+            Movie[] movieData = CursorConverter(data);
+            mMovieAdapter.setMovieInfo(movieData);
+        }
+        getSupportLoaderManager().destroyLoader(MainActivity.MOVIE_LOADER);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.setMovieInfo(null);
+    }
+
+    private Movie[] CursorConverter(Cursor data) {
+        Movie[] movieData = new Movie[data.getCount()];
+        for (int i = 0; i < data.getCount(); i++) {
+            data.moveToPosition(i);
+            int movieId = data.getInt(data.getColumnIndexOrThrow(COLUMN_MOVIE_ID));
+            String movieName = data.getString(data.getColumnIndexOrThrow(COLUMN_MOVIE_TITLE));
+            String movieImage = data.getString(data.getColumnIndexOrThrow(COLUMN_MOVIE_IMAGE));
+            String movieRating = data.getString(data.getColumnIndexOrThrow(COLUMN_MOVIE_RATING));
+            String movieSynopsis = data.getString(data.getColumnIndexOrThrow(COLUMN_MOVIE_SYNOPSIS));
+            String movieReleaseDate = data.getString(data.getColumnIndexOrThrow(COLUMN_MOVIE_RELEASE_DATE));
+            Movie aMovie = new Movie(movieId, movieName, movieImage, movieRating, movieSynopsis, movieReleaseDate);
+            movieData[i] = aMovie;
+        }
+        return movieData;
     }
 }

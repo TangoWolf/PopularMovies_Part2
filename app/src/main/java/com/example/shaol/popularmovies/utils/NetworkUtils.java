@@ -20,12 +20,27 @@ public final class NetworkUtils {
     private static final String API_KEY = "";
 
     public static URL buildUrl(String preference) {
-        Log.v("Test2", API_KEY);
         Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                 .appendPath(preference)
                 .appendQueryParameter("api_key", API_KEY)
                 .build();
-        Log.v("Test3", builtUri.toString());
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    public static URL buildDetailUrl(String movieId, String detail) {
+        Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
+                .appendPath(movieId)
+                .appendPath(detail)
+                .appendQueryParameter("api_key", API_KEY)
+                .build();
 
         URL url = null;
         try {

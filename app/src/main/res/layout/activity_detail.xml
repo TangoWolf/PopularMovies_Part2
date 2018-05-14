@@ -15,7 +15,8 @@
         android:scaleType="fitXY"
         android:alpha="0.5" />
 
-    <ScrollView
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -48,12 +49,48 @@
                 app:layout_constraintStart_toEndOf="@id/poster_image"
                 app:layout_constraintTop_toBottomOf="@id/movie_rating" />
 
+            <CheckBox
+                android:id="@+id/checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:button="@drawable/checkboxes"
+                android:onClick="onCheckBoxClicked"
+                app:layout_constraintStart_toEndOf="@id/poster_image"
+                app:layout_constraintBottom_toBottomOf="@id/poster_image" />
+
             <TextView
                 android:id="@+id/movie_synopsis"
                 style="@style/detailTextViews"
                 app:layout_constraintTop_toBottomOf="@id/poster_image" />
+
+            <TextView
+                android:id="@+id/movie_trailers"
+                style="@style/detailTextViews"
+                android:text="@string/trailers"
+                android:textSize="24sp"
+                app:layout_constraintTop_toBottomOf="@id/movie_synopsis"/>
+
+            <ListView
+                android:id="@+id/trailerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toBottomOf="@id/movie_trailers" />
+
+            <TextView
+                android:id="@+id/movie_reviews"
+                style="@style/detailTextViews"
+                android:text="@string/reviews"
+                android:textSize="24sp"
+                app:layout_constraintTop_toBottomOf="@id/trailerView"/>
+
+            <LinearLayout
+                android:id="@+id/reviewView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/movie_reviews"/>
         </android.support.constraint.ConstraintLayout>
 
-    </ScrollView>
+    </android.support.v4.widget.NestedScrollView>
 
 </android.support.constraint.ConstraintLayout>

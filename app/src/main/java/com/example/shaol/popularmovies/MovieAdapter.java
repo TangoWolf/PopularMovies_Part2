@@ -20,7 +20,6 @@ import com.squareup.picasso.Picasso;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
     private final ListItemClickListener mOnClickListener;
-    String[] mMovieInfo;
     Movie[] aMovieInfo;
 
     public interface ListItemClickListener {
